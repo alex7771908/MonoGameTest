@@ -2,32 +2,29 @@
 using Microsoft.Xna.Framework.Graphics;
 using Microsoft.Xna.Framework.Input;
 using System.Collections.Generic;
+using AirShooter.Classes;
 using System;
-using MonoGameSpaceWar.Classes;
 
-namespace MonoGameTest
+namespace AirShooter
 {
     public class Game1 : Game
     {
-        // инструменты
         private GraphicsDeviceManager _graphics;
         private SpriteBatch _spriteBatch;
-
-        // fields
         private Player player;
-        private Space space;
-        //private Asteroid asteroid;
-        private List<Asteroid> asteroids;
-        private int screenHeight = 600;
+        private Sky sky1;
+        private Sky sky2;
+        private Sky sky3;
+        private Sky[] skies;
+        private List<Mine> mines;
         private int screenWidth = 800;
+        private int screenHeight = 450;
 
         public Game1()
         {
             _graphics = new GraphicsDeviceManager(this);
             Content.RootDirectory = "Content";
             IsMouseVisible = true;
-
-            // Config
             _graphics.PreferredBackBufferWidth = screenWidth;
             _graphics.PreferredBackBufferHeight = screenHeight;
         }
@@ -36,10 +33,11 @@ namespace MonoGameTest
         {
             // TODO: Add your initialization logic here
             player = new Player();
-            space = new Space();
-            //asteroid = new Asteroid();
-            asteroids = new List<Asteroid>();   
-
+            sky1 = new Sky(1);
+            sky2 = new Sky(2);
+            sky3 = new Sky(4);
+            skies = new Sky[3] { sky1, sky2, sky3};
+            mines = new List<Mine>();
             base.Initialize();
         }
 
@@ -49,23 +47,24 @@ namespace MonoGameTest
 
             // TODO: use this.Content to load your game content here
             player.LoadContent(Content);
-            space.LoadContent(Content);
+            sky1.LoadContent(Content, "mainbackground");
+            sky2.LoadContent(Content, "bgLayer1");
+            sky3.LoadContent(Content, "bgLayer2");
             int rectangleHeight = screenHeight;
             int rectangleWidth = screenWidth;
-            Random rnd = new Random();
-            for(int i = 0; i < 10; i++)
+            Random random = new Random();
+            for (int i = 0; i < 10; i++)
             {
-                Asteroid asteroid = new Asteroid();
-                asteroid.LoadContent(Content);
+                Mine mine = new Mine();
+                mine.LoadContent(Content);
 
-                int x = rnd.Next(rectangleWidth - asteroid.Width);
-                int y = rnd.Next(-rectangleHeight, 0);
+                int x = random.Next(screenWidth, screenWidth * 2);
+                int y = random.Next(rectangleHeight - mine.Height);
                 Vector2 position = new Vector2(x, y);
-                asteroid.Position = position;
+                mine.Position = position;
 
-                asteroids.Add(asteroid);
+                mines.Add(mine);
             }
-            //asteroid.LoadContent(Content);
         }
 
         protected override void Update(GameTime gameTime)
@@ -75,25 +74,28 @@ namespace MonoGameTest
 
             // TODO: Add your update logic here
             player.Update();
-            space.Update();
-            //asteroid.Update();
-            
-            foreach (Asteroid asteroid in asteroids) { 
-                asteroid.Update();
-                //check collision
-                if(asteroid.Position.Y > screenHeight)
+            foreach (Sky sky in skies)
+            {
+                sky.Update();
+            }
+            foreach(Mine mine in mines)
+            {
+                mine.Update();
+                if(mine.Position.X <= 0 - mine.Width)
                 {
-                    Random rnd = new Random();
-                    int x = rnd.Next(screenWidth - asteroid.Width);
-                    int y = rnd.Next(-screenHeight, 0);
-                    asteroid.Position = new Vector2(x, y);
+                    Random random = new Random();
+                    int x = random.Next(screenWidth, screenWidth*2);
+                    int y = random.Next(screenHeight - mine.Height);
+                    Vector2 position = new Vector2(x, y);
+                    mine.Position = position;
                 }
 
-                if (asteroid.Collision.Intersects(player.Collision))
+                if (mine.Collision.Intersects(player.Collision))
                 {
-                    
+                    //FIX
+                    Exit();
                 }
-        }
+            }
             base.Update(gameTime);
         }
 
@@ -103,13 +105,15 @@ namespace MonoGameTest
 
             // TODO: Add your drawing code here
             _spriteBatch.Begin();
-            space.Draw(_spriteBatch);
-            player.Draw(_spriteBatch);
-            foreach (Asteroid asteroid in asteroids)
+            foreach (Sky sky in skies)
             {
-                asteroid.Draw(_spriteBatch);
+                sky.Draw(_spriteBatch);
             }
-            //asteroid.Draw(_spriteBatch);
+            foreach (Mine mine in mines)
+            {
+                mine.Draw(_spriteBatch);
+            }
+            player.Draw(_spriteBatch);
             _spriteBatch.End();
 
             base.Draw(gameTime);
