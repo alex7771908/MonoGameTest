@@ -13,7 +13,7 @@ namespace MonoGameSpaceWar.Classes
     internal class Asteroid
     {
         private Vector2 position;
-
+        private bool isAlive = true;
         private Rectangle collision;
         public Vector2 Position { set { position = value; } get { return position; } }
         private Texture2D texture;
@@ -23,6 +23,8 @@ namespace MonoGameSpaceWar.Classes
         {
             get { return collision; }
         }
+
+        public bool IsAlive { get { return isAlive; } set { isAlive = value; } }
         public Asteroid()
         {
             position = Vector2.Zero;
@@ -40,7 +42,7 @@ namespace MonoGameSpaceWar.Classes
         }
 
         public void Update() {
-            position.Y += 2;
+            position.Y += 4;
 
             //update collision
             collision = new Rectangle((int)position.X, (int)position.Y, Width, Height);

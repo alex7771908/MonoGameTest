@@ -18,6 +18,7 @@ namespace MonoGameTest
         private Space space;
         //private Asteroid asteroid;
         private List<Asteroid> asteroids;
+        private List<Explosion> explosions;
         private int screenHeight = 600;
         private int screenWidth = 800;
 
@@ -35,11 +36,11 @@ namespace MonoGameTest
         protected override void Initialize()
         {
             // TODO: Add your initialization logic here
-            player = new Player();
+            player = new Player(Content);
             space = new Space();
             //asteroid = new Asteroid();
-            asteroids = new List<Asteroid>();   
-
+            asteroids = new List<Asteroid>();
+            explosions = new List<Explosion>();
             base.Initialize();
         }
 
@@ -50,22 +51,7 @@ namespace MonoGameTest
             // TODO: use this.Content to load your game content here
             player.LoadContent(Content);
             space.LoadContent(Content);
-            int rectangleHeight = screenHeight;
-            int rectangleWidth = screenWidth;
-            Random rnd = new Random();
-            for(int i = 0; i < 10; i++)
-            {
-                Asteroid asteroid = new Asteroid();
-                asteroid.LoadContent(Content);
-
-                int x = rnd.Next(rectangleWidth - asteroid.Width);
-                int y = rnd.Next(-rectangleHeight, 0);
-                Vector2 position = new Vector2(x, y);
-                asteroid.Position = position;
-
-                asteroids.Add(asteroid);
-            }
-            //asteroid.LoadContent(Content);
+         
         }
 
         protected override void Update(GameTime gameTime)
@@ -74,26 +60,10 @@ namespace MonoGameTest
                 Exit();
 
             // TODO: Add your update logic here
-            player.Update();
+            player.Update(gameTime);
             space.Update();
-            //asteroid.Update();
-            
-            foreach (Asteroid asteroid in asteroids) { 
-                asteroid.Update();
-                //check collision
-                if(asteroid.Position.Y > screenHeight)
-                {
-                    Random rnd = new Random();
-                    int x = rnd.Next(screenWidth - asteroid.Width);
-                    int y = rnd.Next(-screenHeight, 0);
-                    asteroid.Position = new Vector2(x, y);
-                }
-
-                if (asteroid.Collision.Intersects(player.Collision))
-                {
-                    
-                }
-        }
+            UpdateAsteroids();
+            CheckCollision();
             base.Update(gameTime);
         }
 
@@ -109,10 +79,79 @@ namespace MonoGameTest
             {
                 asteroid.Draw(_spriteBatch);
             }
-            //asteroid.Draw(_spriteBatch);
             _spriteBatch.End();
 
             base.Draw(gameTime);
+        }
+
+        private void UpdateAsteroids()
+        {
+            for (int i = 0; i < asteroids.Count; i++)
+            {
+                Asteroid asteroid = asteroids[i];
+
+                asteroid.Update();
+
+                // teleport
+                if (asteroid.Position.Y > screenHeight)
+                {
+                    Random random = new Random();
+                    int y = random.Next(-screenHeight, 0 - asteroid.Height);
+                    int x = random.Next(0, screenWidth - asteroid.Width);
+
+                    asteroid.Position = new Vector2(x, y);
+                }
+
+
+                if (!asteroid.IsAlive)
+                {
+                    
+                    asteroids.Remove(asteroid);
+                    i--;
+                }
+            }
+
+            // загрузка доп астеройдов в игру
+            if (asteroids.Count < 10)
+            {
+                LoadAsteroids();
+            }
+        }
+
+        private void LoadAsteroids()
+        {
+            int rectangleHeight = screenHeight;
+            int rectangleWidth = screenWidth;
+            Random rnd = new Random();
+            Asteroid asteroid = new Asteroid();
+            asteroid.LoadContent(Content);
+
+            int x = rnd.Next(rectangleWidth - asteroid.Width);
+            int y = rnd.Next(rectangleHeight - asteroid.Height);
+            Vector2 position = new Vector2(x, -y);
+            asteroid.Position = position;
+
+            asteroids.Add(asteroid);
+        }
+
+        private void CheckCollision()
+        {
+            foreach (var asteroid in asteroids)
+            {
+                if (player.Collision.Intersects(asteroid.Collision))
+                {
+                    asteroid.IsAlive = false;
+                }
+
+                foreach (var bullet in player.BulletList)
+                {
+                    if (asteroid.Collision.Intersects(bullet.Collision))
+                    {
+                        bullet.IsAlive = false;
+                        asteroid.IsAlive = false;
+                    }
+                }
+            }
         }
     }
 }
