@@ -20,12 +20,15 @@ namespace MonoGameSpaceWar.Classes
         private int width = 117;
         private int height = 117;
 
-        private bool isLoop = true;
+        private bool isLoop = false;
+        private bool isAlive = true;
 
         private double timeTotalSeconds = 0;
-        private double duration = 0.05;
-
+        private double duration = 0.03;
+        
         private Rectangle sourceRectangle; // нужно для рисования области текстуры
+
+        public bool IsAlive { get { return isAlive; } }
 
         public Explosion(Vector2 position)
         {
@@ -49,9 +52,10 @@ namespace MonoGameSpaceWar.Classes
                 timeTotalSeconds = 0;
             }
 
-            if(frameNumber == 17 && isLoop)
+            if(frameNumber == 17 && !isLoop)
             {
-                frameNumber = 0;
+                isAlive = false;
+                
             }
 
             sourceRectangle = new Rectangle(frameNumber * width, 0, width, height);
@@ -60,6 +64,7 @@ namespace MonoGameSpaceWar.Classes
         public void Draw(SpriteBatch spriteBatch)
         {
             spriteBatch.Draw(texture, position, sourceRectangle, Color.White);
+            //spriteBatch.Draw(texture, DEST, sourceRectangle, Color.White);
         }
     }
 }

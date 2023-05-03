@@ -17,6 +17,12 @@ namespace MonoGameSpaceWar.Classes
         private Texture2D texture;
         private float speed;
 
+        public float Speed
+        {
+            set { speed = value; }
+            get { return speed; }
+        }
+
         public Space()
         {
             texture = null;

@@ -7,7 +7,7 @@ using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Content;
 using Microsoft.Xna.Framework.Graphics;
 using Microsoft.Xna.Framework.Input;
-//using MonoGameSpaceWar.Classes;
+using MonoGameTest;
 
 namespace MonoGameSpaceWar.Classes
 {
@@ -26,10 +26,23 @@ namespace MonoGameSpaceWar.Classes
 
         private int time = 0;
         private int maxTime = 60;
+
+        //data
+        private int health = 10;
+        private int score = 12;
+
+        //events
+        public event Action TakeDamage;
+        public event Action<int> ScoreUpdated;
         
         public Rectangle Collision
         {
             get { return collision; }
+        }
+
+        public Vector2 Position
+        {
+            get { return position; }
         }
 
         public List<Bullet> BulletList { get { return bulletList; } }
@@ -98,9 +111,9 @@ namespace MonoGameSpaceWar.Classes
 
             time++;
 
-            if(time > maxTime)
+            if(time > maxTime & Mouse.GetState().LeftButton == ButtonState.Pressed)
             {
-                Bullet bullet = new Bullet();
+                Bullet bullet = new Bullet(new Vector2(0, -1));
                 bullet.Position = new Vector2(position.X + texture.Width / 2 - bullet.Width / 2,
                     position.Y - bullet.Height / 2);
                 bullet.LoadContent(content);
@@ -112,7 +125,7 @@ namespace MonoGameSpaceWar.Classes
             for(int i = 0; i < bulletList.Count; i++)
             {
                 Bullet bullet = bulletList[i];
-                bullet.Update();
+                bullet.Update(gameTime);
             }
 
             for(int i =0; i < bulletList.Count; i++)
@@ -132,6 +145,32 @@ namespace MonoGameSpaceWar.Classes
                 bullet.Draw(spriteBatch);
             }
             spriteBatch.Draw(texture, position, Color.White);
+        }
+
+        //business logic
+        public void Damage()
+        {
+            health--;
+
+            if(TakeDamage != null)
+            {
+                TakeDamage();
+            }
+
+            if(health <= 0)
+            {
+                Game1.gameMode = GameMode.GameOver;
+          
+            }
+        }
+
+        public void Score(int score)
+        {
+            this.score ++;
+            if(ScoreUpdated != null)
+            {
+                ScoreUpdated(score);
+            }
         }
 
     }

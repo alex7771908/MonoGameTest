@@ -16,9 +16,12 @@ namespace MonoGameSpaceWar.Classes
         private Texture2D texture;
         private int width = 15;
         private int height = 75;
+        private int speed = 200;
         private bool isAlive = true;
         public int Width { get { return width; } }
         public int Height { get { return height; } }
+
+        private Vector2 vectorDirection = new Vector2(1, 0);
         public Vector2 Position
         { 
             get 
@@ -36,15 +39,18 @@ namespace MonoGameSpaceWar.Classes
             get { return destinationRectangle; }
         }
         public bool IsAlive { get { return isAlive; } set { isAlive = value; } }
-        public Bullet()
+        public Bullet(Vector2 vectorDirection)
         {
             texture = null;
+            this.vectorDirection = vectorDirection;
             destinationRectangle = new Rectangle(0, 0, width, height);
         }
-        public Bullet(Vector2 position)
+
+        public Bullet(Texture2D texture, Vector2 vectorDirection)
         {
-            texture = null;
-            destinationRectangle = new Rectangle((int)position.X, (int)position.Y, width, height);
+            this.texture = texture;
+            destinationRectangle = new Rectangle(0, 0, width, height);
+            this.vectorDirection = vectorDirection;
         }
 
         public void LoadContent(ContentManager content)
@@ -52,10 +58,16 @@ namespace MonoGameSpaceWar.Classes
             texture = content.Load<Texture2D>("bullet");     
         } 
 
-        public void Update()
+        public void Update(GameTime gameTime)
         {
-            destinationRectangle.Y -= 6;
-            if(Position.Y < 0 - height)
+            //destinationRectangle.Y -= 6;
+            float delta = (float)gameTime.ElapsedGameTime.TotalSeconds;
+
+            Vector2 vectorVelocity = vectorDirection * speed;
+
+            Position = Position + vectorVelocity * delta;
+
+            if(Position.Y < 0 - height || Position.X < -width || Position.Y > 600 || Position.X > 800 )
             {
                 isAlive = false;
             }
@@ -63,7 +75,7 @@ namespace MonoGameSpaceWar.Classes
 
         public void Draw(SpriteBatch spriteBatch)
         {
-            spriteBatch.Draw(texture, destinationRectangle, Color.White);
+            spriteBatch.Draw(texture, destinationRectangle, Color.Black);
         }
     }
 }
